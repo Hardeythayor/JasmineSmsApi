@@ -18,16 +18,17 @@ class LoginController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Invalid login details'
-            ], 403);
+            ], 401);
         }
 
         $token = $user->createToken($request->ip())->plainTextToken;
+
+        $user->token = $token;
 
         return response()->json([
             'status' => 'success',
             'message' => 'Login Successful',
             'user' => $user,
-            'token' => $token
         ], 200);
     }
 
