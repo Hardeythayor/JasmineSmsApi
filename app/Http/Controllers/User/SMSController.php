@@ -6,11 +6,14 @@ use App\Events\SendReservedMessageEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\SendSmsRequest;
 use App\Models\SmsMessage;
+use App\Services\EasySmsGateway;
 use App\Services\EimsSmsGateway;
 use App\Services\VonageSmsGateway;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class SMSController extends Controller
 {
@@ -30,10 +33,8 @@ class SMSController extends Controller
                 'scheduled' => 'no'
             ]);
 
-            if($created_sms->send_type == 'immediately') {
-                $eims = new EimsSmsGateway;
-                $eims->sendSMS($created_sms);
-            }
+            $eims = new EasySmsGateway;
+            $eims->sendSMS($created_sms);
 
             return response()->json([
                 'status' => 'success',
@@ -60,5 +61,22 @@ class SMSController extends Controller
         //         'body' => $request->message
         //     ]);
         // $api_response = json_decode($response);
+    }
+
+    public function webhookResponse(Request $request)
+    {
+        $data = $request->input();
+
+        Log::info(['webhook_data' => $data]);
+
+        return response()->json(['message' => 'success'], 200);
+    }
+
+    public function runArtisanCommand()
+    {
+        $t = Artisan::call('migrate:fresh --seed');
+        
+        Artisan::call('optimize');
+        return Artisan::output();
     }
 }

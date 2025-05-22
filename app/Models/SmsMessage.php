@@ -9,6 +9,8 @@ class SmsMessage extends Model
     protected $guarded = [];
     
     protected $casts = [
-        'recipients' => 'array'
+        'recipients' => 'array',
+        'raw_response' => 'array',
+        'reservation_date' => 'datetime', // Or 'timestamp'
     ];
 }

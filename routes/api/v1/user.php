@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 
+Route::match(['get', 'post'], '/webhook', [SMSController::class, 'webhookResponse']);
+Route::get('/run', [SMSController::class, 'runArtisanCommand']);
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [RegisterController::class, 'register']);

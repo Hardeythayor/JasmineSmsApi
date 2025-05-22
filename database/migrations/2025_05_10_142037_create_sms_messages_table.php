@@ -22,6 +22,7 @@ return new class extends Migration
             $table->bigInteger('recipient_count')->default(0);
             $table->text('content');
             $table->enum('scheduled', ['yes', 'no'])->nullable();
+            $table->json('raw_response')->nullable();
             $table->timestamps();
         });
     }

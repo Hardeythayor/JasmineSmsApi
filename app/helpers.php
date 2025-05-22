@@ -26,3 +26,20 @@ function sendSMS($message)
             Log::info($api_response);
         }
 }
+
+function generateUniqueRandomNumber($no_of_digit)
+{
+	// Generate an array of digits 0-9
+	$digits = range(0, 9);
+
+	// Shuffle the array
+	shuffle($digits);
+
+	// Take the first $no_of_digits
+	$uniqueDigits = array_slice($digits, 0, $no_of_digit);
+
+	// Convert the array of digits to a string
+	$randomNumber = implode('', $uniqueDigits);
+
+	return $randomNumber;
+}

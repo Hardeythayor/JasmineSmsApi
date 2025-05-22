@@ -31,6 +31,16 @@ class SmsGatewaySeeder extends Seeder
                 ],
 				'status' => 'active'
 			),
+            array(
+				'name' => "easy_sms",
+				'credentials' => [
+                    'url' => 'https://restapi.easysendsms.app/v1/rest/sms/send',
+                    "account" => "jasmqlqlqnvo12025",
+                    "password" => "jasminekali22",
+                    'api_key' => 'me71rygjp14ghaprgurg2hvdy6vhiyfe'
+                ],
+				'status' => 'active'
+			),
 		);
 		foreach ($sms_gateways as $gateway) {
 			$service = SmsGateway::updateOrCreate($gateway);
