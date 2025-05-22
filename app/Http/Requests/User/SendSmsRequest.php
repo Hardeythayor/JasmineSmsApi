@@ -23,6 +23,7 @@ class SendSmsRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'smsAmount' => 'required',
             'sendMode' => [ // Add this rule
                 'required',
                 Rule::in(['immediately', 'reserved']),
@@ -57,6 +58,7 @@ class SendSmsRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'sendMode.required' => 'The total sms amount field is required.', //Custom message
             'sendMode.required' => 'The send mode field is required.', //Custom message
             'sendMode.in' => 'The send mode must be either "immediately" or "reserved".', //Custom message
             'sendDate.required' => 'The send date field is required when send mode is "reserved".',

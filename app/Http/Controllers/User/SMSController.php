@@ -6,12 +6,16 @@ use App\Events\SendReservedMessageEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\SendSmsRequest;
 use App\Models\SmsMessage;
+use App\Models\UserCredit;
+use App\Models\UserCreditHistory;
 use App\Services\EasySmsGateway;
 use App\Services\EimsSmsGateway;
 use App\Services\VonageSmsGateway;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -20,6 +24,12 @@ class SMSController extends Controller
     public function sendMessage(SendSmsRequest $request)
     {
         try {
+            DB::beginTransaction();
+            $credit = UserCredit::where('user_id', $request->user()->id)->first();
+            if($credit->credit_balance < $request->smsAmount) {
+                throw new Exception('Insufficient credit balance');
+            }
+
             //save message
             $created_sms = SmsMessage::create([
                 'user_id' => $request->user()->id,
@@ -32,6 +42,14 @@ class SMSController extends Controller
                 'content' => $request->content,
                 'scheduled' => 'no'
             ]);
+
+            UserCreditHistory::create([
+                'user_id' => $request->user()->id,
+                'type' => 'deduction',
+                'purpose' => $request->content,
+                'amount' => $request->smsAmount
+            ]);
+            DB::commit();
 
             $eims = new EasySmsGateway;
             $eims->sendSMS($created_sms);
