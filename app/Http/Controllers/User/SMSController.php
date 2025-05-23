@@ -54,8 +54,8 @@ class SMSController extends Controller
             Log::info($created_sms->recipients);
             DB::commit();
 
-            // $eims = new EasySmsGateway;
-            // $eims->sendSMS($created_sms);
+            $eims = new EasySmsGateway;
+            $eims->sendSMS($created_sms);
 
             return response()->json([
                 'status' => 'success',
