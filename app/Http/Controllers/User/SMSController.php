@@ -26,7 +26,7 @@ class SMSController extends Controller
         try {
             DB::beginTransaction();
             $credit = UserCredit::where('user_id', $request->user()->id)->first();
-            if($credit->credit_balance < $request->smsAmount) {
+            if(is_null($credit) || $credit->credit_balance < $request->smsAmount) {
                 throw new Exception('Insufficient credit balance');
             }
 
@@ -49,10 +49,13 @@ class SMSController extends Controller
                 'purpose' => $request->content,
                 'amount' => $request->smsAmount
             ]);
+
+            $created_sms->recipients = transformPhoneNumbers($created_sms->recipients);
+            Log::info($created_sms->recipients);
             DB::commit();
 
-            $eims = new EasySmsGateway;
-            $eims->sendSMS($created_sms);
+            // $eims = new EasySmsGateway;
+            // $eims->sendSMS($created_sms);
 
             return response()->json([
                 'status' => 'success',

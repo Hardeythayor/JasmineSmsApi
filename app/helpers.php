@@ -43,3 +43,18 @@ function generateUniqueRandomNumber($no_of_digit)
 
 	return $randomNumber;
 }
+
+function transformPhoneNumbers($numbers)
+{
+    $transformedNumbers = collect($numbers)->map(function ($number) {
+        if (str_starts_with($number, '10')) {
+            return '82' . $number;
+        } elseif (str_starts_with($number, '010')) {
+            // Remove the leading '0' and then prefix with '82'
+            return '82' . substr($number, 1);
+        }
+        return $number; // Return the number as is if it doesn't match the conditions
+    })->toArray();
+
+    return $transformedNumbers;
+}
