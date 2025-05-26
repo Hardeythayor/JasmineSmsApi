@@ -17,7 +17,8 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             AdminSeeder::class,
-            SmsGatewaySeeder::class
+            SmsGatewaySeeder::class,
+            ThirdPartyNumbersSeeder::class
         ]);
     }
 }

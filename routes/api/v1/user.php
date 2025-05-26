@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::match(['get', 'post'], '/webhook', [SMSController::class, 'webhookResponse']);
-Route::get('/run', [SMSController::class, 'runArtisanCommand']);
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [RegisterController::class, 'register']);
@@ -27,5 +26,9 @@ Route::group(['middleware' => ['auth:user']], function () {
     });
     Route::prefix('message')->group(function() {
         Route::post('/send', [SMSController::class, 'sendMessage']);
+        Route::match(['get', 'post'], '/report/{user_id?}', [SMSController::class, 'fetchSmsReport']);
+        Route::match(['get', 'post'], '/report/single/{id}', [SMSController::class, 'fetchSingleSmsReport']);
+        Route::get('/test_numbers', [SMSController::class, 'fetchThirdpartyNumbers']);
+        Route::get('/test_result/{user_id?}', [SMSController::class, 'fetchThirdpartyResult']);
     });
 });

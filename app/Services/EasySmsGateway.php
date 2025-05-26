@@ -30,8 +30,8 @@ class EasySmsGateway
         $recipients = $sms_messages->recipients;
 
         $post_data = [
-            "from" => generateUniqueRandomNumber(11),
-            "to" => implode(', ', $recipients),
+            "from" => $sms_messages->source,
+            "to" => implode(',', $recipients),
             "text" => $sms_messages->content,
             "type" => "1"
         ];
@@ -50,7 +50,11 @@ class EasySmsGateway
             ->post($url, $post_data);
         
         $api_response = $response->json();
+        Log::info(['response' => $api_response]);
 
-        SmsMessage::where('id', $sms_messages->id)->update(['raw_response' => $api_response]);
+        SmsMessage::where('id', $sms_messages->id)->update([
+            'raw_response' => $api_response,
+            'status' => (isset($api_response['status']) && $api_response['status'] == 'OK') ? 'success' : ((isset($api_response['error']) &&  $api_response['error'] == 4012) ? 'failure' : 'pending') 
+        ]);
     }
 }
