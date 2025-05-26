@@ -5,7 +5,10 @@ namespace App\Http\Controllers\User;
 use App\Events\SendReservedMessageEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\SendSmsRequest;
+use App\Models\MessageRecipient;
 use App\Models\SmsMessage;
+use App\Models\ThirdPartyNumber;
+use App\Models\User;
 use App\Models\UserCredit;
 use App\Models\UserCreditHistory;
 use App\Services\EasySmsGateway;
@@ -21,6 +24,23 @@ use Illuminate\Support\Facades\Log;
 
 class SMSController extends Controller
 {
+    public function fetchThirdpartyNumbers()
+    {
+        try {
+            $third_party_numbers = ThirdPartyNumber::where('status', 'active')->pluck('phone')->toArray();
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $third_party_numbers
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $th->getMessage()
+            ], 500);
+        }
+    }
+
     public function sendMessage(SendSmsRequest $request)
     {
         try {
@@ -40,9 +60,11 @@ class SMSController extends Controller
                 'recipients' => $request->recipients,
                 'recipient_count' => $request->recipientCount,
                 'content' => $request->content,
-                'scheduled' => 'no'
+                'scheduled' => 'no',
+                'source' => generateUniqueRandomNumber(11),
+                'message_type' => $request->type
             ]);
-
+            
             UserCreditHistory::create([
                 'user_id' => $request->user()->id,
                 'type' => 'deduction',
@@ -51,7 +73,7 @@ class SMSController extends Controller
             ]);
 
             $created_sms->recipients = transformPhoneNumbers($created_sms->recipients);
-            Log::info($created_sms->recipients);
+
             DB::commit();
 
             $eims = new EasySmsGateway;
@@ -84,20 +106,127 @@ class SMSController extends Controller
         // $api_response = json_decode($response);
     }
 
+    public function fetchSmsReport(Request $request, $user_id = null)
+    {
+        try {
+            $sms_report = SmsMessage::with('sender', 'messageRecipients')->where('message_type', 'normal');
+
+            if(!is_null($user_id)) {
+                $user = User::where('id', $user_id)->first();
+
+                if(!$user) {
+                    throw new Exception('User not found!');
+                }
+
+                $sms_report->where('user_id', $user_id);
+            }
+
+            if($request->has('search') && !is_null($request->search)) {
+                $sms_report->where('content', 'LIKE', "%{$request->search}%");
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $sms_report->orderBy('created_at', 'DESC')->paginate('50')
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function fetchSingleSmsReport($id)
+    {
+        try {
+            $success_count = 0;
+            $fail_count = 0;
+
+            $sms_report = SmsMessage::with('sender', 'messageRecipients')->where('id', $id)->first();
+
+            foreach ($sms_report->messageRecipients as $key => $value) {
+                if($value->status == 'completed') {
+                    $success_count++;
+                }
+                if($value->status == 'failed') {
+                    $fail_count++;
+                }
+            }
+
+            $sms_report->success_count = $success_count;
+            $sms_report->fail_count = $fail_count;
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $sms_report
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function fetchThirdpartyResult($user_id=null)
+    {
+        try {
+            $sms_test_numbers = ThirdPartyNumber::where('status', 'active')->orderBy('id', 'ASC')->get();
+            $test_sms_report = SmsMessage::with('sender', 'messageRecipients')->where('message_type', 'test');
+
+            if(!is_null($user_id)) {
+                $user = User::where('id', $user_id)->first();
+
+                if(!$user) {
+                    throw new Exception('User not found!');
+                }
+
+                $test_sms_report->where('user_id', $user_id);
+            }
+
+            $data = $test_sms_report->orderBy('created_at', 'DESC')->paginate('50');
+
+            foreach ($data as $key => $test_report) {
+                foreach ($sms_test_numbers as $subkey => $num) {
+                    $collection = collect($test_report->messageRecipients);
+                    $element = $collection->firstWhere('phone_number', $num->phone);
+                    if ($element) {
+                        $status = $element['status'];
+                        $data[$key][$num->label] = $status;
+                    }
+                }
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $data
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $th->getMessage()
+            ], 500);
+        }
+    }
+
     public function webhookResponse(Request $request)
     {
         $data = $request->input();
 
         Log::info(['webhook_data' => $data]);
 
-        return response()->json(['message' => 'success'], 200);
-    }
+        if(count($data) > 0) {
+            $sms_message = SmsMessage::where('source' , $data['source'])->first();
 
-    public function runArtisanCommand()
-    {
-        $t = Artisan::call('migrate:fresh --seed');
-        
-        Artisan::call('optimize');
-        return Artisan::output();
+            MessageRecipient::where(['message_id' => $sms_message->id, 'phone_number' => $data['msisdn']])->update([
+                'status' => ($data['response'] == 'DELIVRD') ? 'completed' : (($data['response'] == 'UNDELIV') ? 'failed' : 'pending'),
+                'sent_at' => $data['sent_date'],
+                'phone_sms_id' => $data['sms_id'],
+                'fail_reason' => $data['response'] == 'EXPIRED' ? 'The carrier has timed out.' : NULL
+            ]);
+        }
+
+        return response()->json(['message' => 'success'], 200);
     }
 }

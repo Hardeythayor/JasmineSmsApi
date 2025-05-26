@@ -24,6 +24,7 @@ class SendSmsRequest extends FormRequest
     {
         return [
             'smsAmount' => 'required',
+            'type' => 'required',
             'sendMode' => [ // Add this rule
                 'required',
                 Rule::in(['immediately', 'reserved']),
