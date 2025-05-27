@@ -60,9 +60,9 @@ class UserCreditController extends Controller
             }
 
             if($request->has('paginated') && $request->paginated == true) {
-                $user_credit_history = $user_credit_history->paginate('30');
+                $user_credit_history = $user_credit_history->orderBy('created_at', 'DESC')->paginate('30');
             } else {
-                $user_credit_history = $user_credit_history->get();
+                $user_credit_history = $user_credit_history->orderBy('created_at', 'DESC')->get();
             }
 
             return response()->json([

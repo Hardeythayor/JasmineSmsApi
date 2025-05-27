@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\User\Auth\LoginController;
 use App\Http\Controllers\User\Auth\RegisterController;
+use App\Http\Controllers\User\DashboardController;
 use App\Http\Controllers\User\ProfileController;
 use App\Http\Controllers\User\SMSController;
 use App\Http\Controllers\User\UserCreditController;
@@ -30,5 +31,10 @@ Route::group(['middleware' => ['auth:user']], function () {
         Route::match(['get', 'post'], '/report/single/{id}', [SMSController::class, 'fetchSingleSmsReport']);
         Route::get('/test_numbers', [SMSController::class, 'fetchThirdpartyNumbers']);
         Route::get('/test_result/{user_id?}', [SMSController::class, 'fetchThirdpartyResult']);
+    });
+
+    Route::prefix('dashboard')->group(function() {
+        Route::get('/me', [DashboardController::class, 'fetchUserSmsInfo']);
+        Route::get('/chart_data', [DashboardController::class, 'fetchUserSmsChartData']);
     });
 });
