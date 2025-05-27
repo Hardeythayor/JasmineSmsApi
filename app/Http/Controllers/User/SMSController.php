@@ -68,7 +68,7 @@ class SMSController extends Controller
             UserCreditHistory::create([
                 'user_id' => $request->user()->id,
                 'type' => 'deduction',
-                'purpose' => $request->content,
+                'purpose' => $request->type == 'test' ? '3rd party test sent' : "Send message ({$request->recipientCount})",
                 'amount' => $request->smsAmount
             ]);
 
