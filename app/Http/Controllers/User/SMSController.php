@@ -219,7 +219,7 @@ class SMSController extends Controller
         if(count($data) > 0) {
             $sms_message = SmsMessage::where('source' , $data['source'])->first();
 
-            MessageRecipient::where(['message_id' => $sms_message->id, 'phone_number' => $data['msisdn']])->update([
+            MessageRecipient::where(['message_id' => $sms_message->id, 'transformed_phone' => $data['msisdn']])->update([
                 'status' => ($data['response'] == 'DELIVRD') ? 'completed' : (($data['response'] == 'UNDELIV') ? 'failed' : 'pending'),
                 'sent_at' => $data['sent_date'],
                 'phone_sms_id' => $data['sms_id'],
