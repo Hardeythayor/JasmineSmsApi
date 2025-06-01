@@ -6,6 +6,7 @@ use App\Events\SendReservedMessageEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\SendSmsRequest;
 use App\Models\MessageRecipient;
+use App\Models\SmsGateway;
 use App\Models\SmsMessage;
 use App\Models\ThirdPartyNumber;
 use App\Models\User;
@@ -32,6 +33,29 @@ class SMSController extends Controller
             return response()->json([
                 'status' => 'success',
                 'data' => $third_party_numbers
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function fetchSmsCharge()
+    {
+        try {
+            $sms_gateway = SmsGateway::where('status', 'active')->first();
+
+            if(is_null($sms_gateway)){
+                throw new Exception("No active gateway found");
+            }
+
+            $sms_charge = $sms_gateway->sms_charge;
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $sms_charge
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
@@ -68,8 +92,9 @@ class SMSController extends Controller
             UserCreditHistory::create([
                 'user_id' => $request->user()->id,
                 'type' => 'deduction',
-                'purpose' => $request->type == 'test' ? '3rd party test sent' : "Send message ({$request->recipientCount})",
-                'amount' => $request->smsAmount
+                'purpose' => $request->type == 'test' ? '3rd party test sent' : "Send message ()",
+                'amount' => $request->smsAmount,
+                'recipient_count' => $request->type == 'test' ? NULL : $request->recipientCount,
             ]);
 
             $created_sms->recipients = transformPhoneNumbers($created_sms->recipients);

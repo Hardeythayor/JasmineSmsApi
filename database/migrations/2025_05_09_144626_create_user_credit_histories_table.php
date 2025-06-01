@@ -17,6 +17,7 @@ return new class extends Migration
             $table->enum('type', ['charge', 'deduction', 'refund'])->default('charge');
             $table->double('amount');
             $table->text('purpose')->nullable();
+            $table->bigInteger('recipient_count')->nullable();
             $table->timestamps();
         });
     }

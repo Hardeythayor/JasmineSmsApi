@@ -20,7 +20,8 @@ class SmsGatewaySeeder extends Seeder
                     'api_key' => 'fd108944',
                     'api_secret' => 'go12f6huKjSRblf5',
                 ],
-				'status' => 'active'
+				'status' => 'inactive',
+                'sms_charge' => 16
 			),
 			array(
 				'name' => "eims",
@@ -29,7 +30,8 @@ class SmsGatewaySeeder extends Seeder
                     "account" => "0223-C0007",
                     "password" => "3FB1F4D7",
                 ],
-				'status' => 'active'
+				'status' => 'inactive',
+                'sms_charge' => 16
 			),
             array(
 				'name' => "easy_sms",
@@ -39,7 +41,8 @@ class SmsGatewaySeeder extends Seeder
                     "password" => "jasminekali22",
                     'api_key' => 'me71rygjp14ghaprgurg2hvdy6vhiyfe'
                 ],
-				'status' => 'active'
+				'status' => 'active',
+                'sms_charge' => 16
 			),
 		);
 		foreach ($sms_gateways as $gateway) {
