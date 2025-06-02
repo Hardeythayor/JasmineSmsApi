@@ -92,9 +92,9 @@ class SMSController extends Controller
             UserCreditHistory::create([
                 'user_id' => $request->user()->id,
                 'type' => 'deduction',
-                'purpose' => $request->type == 'test' ? '3rd party test sent' : "Send message ()",
+                'purpose' => $request->type == 'test' ? '3rd party test sent' : "Send message",
                 'amount' => $request->smsAmount,
-                'recipient_count' => $request->type == 'test' ? NULL : $request->recipientCount,
+                'recipient_count' => $request->type == 'test' ? NULL : intVal($request->recipientCount),
             ]);
 
             $created_sms->recipients = transformPhoneNumbers($created_sms->recipients);
