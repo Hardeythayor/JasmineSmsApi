@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Events\SendReservedMessageEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\SendSmsRequest;
+use App\Jobs\SendSmsChunk;
 use App\Models\MessageRecipient;
 use App\Models\SmsGateway;
 use App\Models\SmsMessage;
@@ -68,6 +69,8 @@ class SMSController extends Controller
     public function sendMessage(SendSmsRequest $request)
     {
         try {
+            $chunkSize = 30; // Maximum number of recipients per chunk
+
             DB::beginTransaction();
             $credit = UserCredit::where('user_id', $request->user()->id)->first();
             if(is_null($credit) || $credit->credit_balance < $request->smsAmount) {
@@ -101,8 +104,17 @@ class SMSController extends Controller
 
             DB::commit();
 
-            $eims = new EasySmsGateway;
-            $eims->sendSMS($created_sms);
+            // Chunk the recipients array into smaller arrays
+            $chunks = array_chunk($created_sms->recipients, $chunkSize);
+
+            foreach ($chunks as $chunk) {
+                // Dispatch a *separate* job for each chunk
+                // Each job contains one array of up to 30 phone numbers
+                SendSmsChunk::dispatch($created_sms, $chunk);
+            }
+
+            // $eims = new EasySmsGateway;
+            // $eims->sendSMS($created_sms);
 
             return response()->json([
                 'status' => 'success',
