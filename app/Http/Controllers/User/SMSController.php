@@ -259,8 +259,8 @@ class SMSController extends Controller
             if($sms_message) {
                 MessageRecipient::where(['message_id' => $sms_message->id, 'transformed_phone' => $data['msisdn']])->update([
                     'status' => ($data['status'] == 'DELIVRD') ? 'completed' : (($data['status'] == 'UNDELIV') ? 'failed' : 'pending'),
-                    'sent_at' => $data['sent_date'],
-                    'phone_sms_id' => $data['sms_id'],
+                    'sent_at' => $data['sentdate'],
+                    'phone_sms_id' => $data['smsid'],
                     'fail_reason' => $data['status'] == 'EXPIRED' ? 'The carrier has timed out.' : NULL
                 ]);
             }
