@@ -39,7 +39,9 @@ class SmsGatewaySeeder extends Seeder
                     'url' => 'https://restapi.easysendsms.app/v1/rest/sms/send',
                     "account" => "jasmqlqlqnvo12025",
                     "password" => "jasminekali22",
-                    'api_key' => 'me71rygjp14ghaprgurg2hvdy6vhiyfe'
+                    'api_key' => 'me71rygjp14ghaprgurg2hvdy6vhiyfe',
+                    'smpp_host' => 'smpp.easysendsms.com',
+                    'smpp_port' => '2778'
                 ],
 				'status' => 'active',
                 'sms_charge' => 16
