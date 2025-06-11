@@ -21,6 +21,13 @@ class LoginController extends Controller
             ], 401);
         }
 
+        if($user->status == 'inactive') {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Account not Active. Contact Admin'
+            ], 401);
+        }
+
         $token = $user->createToken($request->ip())->plainTextToken;
 
         $user->token = $token;

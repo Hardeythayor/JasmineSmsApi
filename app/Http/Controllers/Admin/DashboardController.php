@@ -1,27 +1,48 @@
 <?php
 
-namespace App\Http\Controllers\User;
+namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\SmsMessage;
+use App\Models\User;
 use App\Models\UserCredit;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-    public function fetchUserSmsInfo()
+    public function fetchAnalytics()
     {
-        $total_sms_sent = SmsMessage::where(['user_id' => request()->user()->id, 'message_type' => 'normal'])->count();
-        $remaining_credits = UserCredit::where('user_id', request()->user()->id)->first()->credit_balance;
+        try {
+            $total_sms = SmsMessage::count();
+            $total_direct_sms_sent = SmsMessage::where('message_type', 'normal')->count();
+            $total_available_credits = UserCredit::sum('credit_balance');
+            $total_users = User::where('user_type', 'user')->count();
+            $total_test_sms_sent = SmsMessage::where('message_type', 'test')->count();
+            $total_success = SmsMessage::where('status', 'success')->count();
+            $total_failed = SmsMessage::whereIn('status', ['pending', 'failure'])->count();
 
         return response()->json([
             'status' => 'success',
-            'data' => ['total_sms' => $total_sms_sent, 'credit' => $remaining_credits]
+            'data' => [
+                'total_sms' => $total_sms,
+                'total_direct_sms' => $total_direct_sms_sent, 
+                'total_credit' => $total_available_credits,
+                'total_users' => $total_users,
+                'total_test_sms' => $total_test_sms_sent,
+                "total_completed" => $total_success,
+                "total_failed" => $total_failed
+            ]
         ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $th->getMessage()
+            ], 500);
+        }
     }
 
-    public function fetchUserSmsChartData() 
+    public function fetchSmsChartData() 
     {
         $days = [];
         $smsCounts = [];
@@ -39,7 +60,6 @@ class DashboardController extends Controller
         // We select the date formatted as 'MM/DD' and count messages for that date
         $dailySmsData = SmsMessage::selectRaw("DATE_FORMAT(created_at, '%m/%d') as day_formatted, COUNT(*) as count")
             ->whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
-            ->where('user_id', request()->user()->id)
             ->groupBy('day_formatted')
             ->orderBy('day_formatted', 'ASC') // Order by date to ensure correct chronological order
             ->get();
