@@ -27,7 +27,9 @@ class RegisterRequest extends FormRequest
             'userId' => 'required|unique:users',
             'inviteCode' => [
                 'required',
-                Rule::exists('invitation_codes', 'invite_code'), // Use Rule::exists
+                Rule::exists('invitation_codes', 'invite_code')->where(function ($query) {
+                    $query->where('status', 'active');
+                }), // Use Rule::exists
             ],
             'email' => 'nullable',
             'name' => 'required',
