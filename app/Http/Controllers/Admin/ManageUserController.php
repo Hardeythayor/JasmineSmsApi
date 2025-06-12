@@ -99,7 +99,7 @@ class ManageUserController extends Controller
             UserCreditHistory::create([
                 'user_id' => $id,
                 'type' => 'charge',
-                'amount' => $request->amount,
+                'amount' => abs($request->amount),
                 'purpose' => 'Admin Charge'
             ]);
 
