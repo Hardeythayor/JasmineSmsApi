@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ToggleStatusRequest;
+use App\Models\SmsGateway;
 use App\Models\User;
 use App\Models\UserCreditHistory;
 use Exception;
@@ -14,15 +15,24 @@ class ManageUserController extends Controller
     public function fetchUsers(Request $request)
     {
         try {
-            $users = User::where('user_type', 'user');
+            $sms_gateway = SmsGateway::where('status', 'active')->first();
+
+            $users = User::with('smsCredit:user_id,credit_balance')->where('user_type', 'user');
 
             if($request->has('search') && !is_null($request->search)) {
                 $users->whereAny(['name', 'email', 'userid', 'invite_code'], 'LIKE', "%{$request->search}%");
             }
+            $users = $users->paginate(50);
+
+            if($sms_gateway) {
+                foreach ($users as $key => $user) {
+                    $user->remaining_sms = $user->smsCredit ? floor($user->smsCredit->credit_balance/$sms_gateway->sms_charge) : NULL;
+                }
+            }
 
             return response()->json([
                 'status' => 'success',
-                'data' => $users->paginate(50)
+                'data' => $users
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
