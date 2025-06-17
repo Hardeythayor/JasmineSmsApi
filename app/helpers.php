@@ -58,3 +58,15 @@ function transformPhoneNumbers($numbers)
 
     return $transformedNumbers;
 }
+
+function transformSinglePhoneNumber($num)
+{
+    if (str_starts_with($num, '10')) {
+        return '82' . $num;
+    } elseif (str_starts_with($num, '010')) {
+        // Remove the leading '0' and then prefix with '82'
+        return '82' . substr($num, 1);
+    } else {
+        return $num;
+    };
+}

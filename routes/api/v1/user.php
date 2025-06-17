@@ -31,6 +31,7 @@ Route::group(['middleware' => ['auth:user']], function () {
         Route::match(['get', 'post'], '/report/single/{id}', [SMSController::class, 'fetchSingleSmsReport']);
         Route::get('/test_numbers', [SMSController::class, 'fetchThirdpartyNumbers']);
         Route::get('/test_result/{user_id?}', [SMSController::class, 'fetchThirdpartyResult']);
+        Route::get('/charge', [SMSController::class, 'fetchSmsCharge'])->withoutMiddleware('auth:user');
     });
 
     Route::prefix('dashboard')->group(function() {

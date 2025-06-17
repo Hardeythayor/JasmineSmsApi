@@ -20,7 +20,8 @@ class SmsGatewaySeeder extends Seeder
                     'api_key' => 'fd108944',
                     'api_secret' => 'go12f6huKjSRblf5',
                 ],
-				'status' => 'active'
+				'status' => 'inactive',
+                'sms_charge' => 16
 			),
 			array(
 				'name' => "eims",
@@ -29,7 +30,8 @@ class SmsGatewaySeeder extends Seeder
                     "account" => "0223-C0007",
                     "password" => "3FB1F4D7",
                 ],
-				'status' => 'active'
+				'status' => 'inactive',
+                'sms_charge' => 16
 			),
             array(
 				'name' => "easy_sms",
@@ -37,9 +39,12 @@ class SmsGatewaySeeder extends Seeder
                     'url' => 'https://restapi.easysendsms.app/v1/rest/sms/send',
                     "account" => "jasmqlqlqnvo12025",
                     "password" => "jasminekali22",
-                    'api_key' => 'me71rygjp14ghaprgurg2hvdy6vhiyfe'
+                    'api_key' => 'me71rygjp14ghaprgurg2hvdy6vhiyfe',
+                    'smpp_host' => 'smpp.easysendsms.com',
+                    'smpp_port' => '2778'
                 ],
-				'status' => 'active'
+				'status' => 'active',
+                'sms_charge' => 16
 			),
 		);
 		foreach ($sms_gateways as $gateway) {

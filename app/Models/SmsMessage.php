@@ -47,7 +47,8 @@ class SmsMessage extends Model
             foreach ($created_sms->recipients as $recipient) {
                 MessageRecipient::updateOrCreate([
                     'message_id' => $created_sms->id,
-                    'phone_number' => $recipient
+                    'phone_number' => $recipient,
+                    'transformed_phone' => transformSinglePhoneNumber($recipient)
                 ]);
             }
         });

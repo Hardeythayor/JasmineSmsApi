@@ -5,7 +5,9 @@ namespace App\Http\Controllers\User;
 use App\Events\SendReservedMessageEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\SendSmsRequest;
+use App\Jobs\SendSmsChunk;
 use App\Models\MessageRecipient;
+use App\Models\SmsGateway;
 use App\Models\SmsMessage;
 use App\Models\ThirdPartyNumber;
 use App\Models\User;
@@ -41,9 +43,34 @@ class SMSController extends Controller
         }
     }
 
+    public function fetchSmsCharge()
+    {
+        try {
+            $sms_gateway = SmsGateway::where('status', 'active')->first();
+
+            if(is_null($sms_gateway)){
+                throw new Exception("No active gateway found");
+            }
+
+            $sms_charge = $sms_gateway->sms_charge;
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $sms_charge
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $th->getMessage()
+            ], 500);
+        }
+    }
+
     public function sendMessage(SendSmsRequest $request)
     {
         try {
+            $chunkSize = 30; // Maximum number of recipients per chunk
+
             DB::beginTransaction();
             $credit = UserCredit::where('user_id', $request->user()->id)->first();
             if(is_null($credit) || $credit->credit_balance < $request->smsAmount) {
@@ -68,16 +95,26 @@ class SMSController extends Controller
             UserCreditHistory::create([
                 'user_id' => $request->user()->id,
                 'type' => 'deduction',
-                'purpose' => $request->type == 'test' ? '3rd party test sent' : "Send message ({$request->recipientCount})",
-                'amount' => $request->smsAmount
+                'purpose' => $request->type == 'test' ? '3rd party test sent' : "Send message",
+                'amount' => $request->smsAmount,
+                'recipient_count' => $request->type == 'test' ? NULL : intVal($request->recipientCount),
             ]);
 
             $created_sms->recipients = transformPhoneNumbers($created_sms->recipients);
 
             DB::commit();
 
-            $eims = new EasySmsGateway;
-            $eims->sendSMS($created_sms);
+            // Chunk the recipients array into smaller arrays
+            $chunks = array_chunk($created_sms->recipients, $chunkSize);
+
+            foreach ($chunks as $chunk) {
+                // Dispatch a *separate* job for each chunk
+                // Each job contains one array of up to 30 phone numbers
+                SendSmsChunk::dispatch($created_sms, $chunk);
+            }
+
+            // $eims = new EasySmsGateway;
+            // $eims->sendSMS($created_sms);
 
             return response()->json([
                 'status' => 'success',
@@ -219,12 +256,14 @@ class SMSController extends Controller
         if(count($data) > 0) {
             $sms_message = SmsMessage::where('source' , $data['source'])->first();
 
-            MessageRecipient::where(['message_id' => $sms_message->id, 'phone_number' => $data['msisdn']])->update([
-                'status' => ($data['response'] == 'DELIVRD') ? 'completed' : (($data['response'] == 'UNDELIV') ? 'failed' : 'pending'),
-                'sent_at' => $data['sent_date'],
-                'phone_sms_id' => $data['sms_id'],
-                'fail_reason' => $data['response'] == 'EXPIRED' ? 'The carrier has timed out.' : NULL
-            ]);
+            if($sms_message) {
+                MessageRecipient::where(['message_id' => $sms_message->id, 'transformed_phone' => $data['msisdn']])->update([
+                    'status' => ((isset($data['response']) && $data['response'] == 'DELIVRD') || (isset($data['status']) && $data['status'] == 'DELIVRD') ) ? 'completed' : (((isset($data['response']) && $data['response'] == 'UNDELIV') || (isset($data['status']) && $data['status'] == 'UNDELIV')) ? 'failed' : 'pending'),
+                    'sent_at' => isset($data['sentdate']) ? $data['sentdate'] : $data['sent_date'],
+                    'phone_sms_id' => isset($data['smsid']) ? $data['smsid'] : $data['sms_id'],
+                    'fail_reason' => (isset($data['status']) && $data['status'] == 'EXPIRED') || (isset($data['response']) && $data['response'] == 'EXPIRED') ? 'The carrier has timed out.' : NULL
+                ]);
+            }
         }
 
         return response()->json(['message' => 'success'], 200);

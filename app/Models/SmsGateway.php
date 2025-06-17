@@ -10,4 +10,5 @@ class SmsGateway extends Model
     protected $casts = [
         'credentials' => 'array'
     ];
+    protected $hidden = ['credentials'];
 }

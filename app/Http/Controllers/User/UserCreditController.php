@@ -67,7 +67,7 @@ class UserCreditController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'User credit fetched successfully',
+                'message' => 'User credit history fetched successfully',
                 'data' => $user_credit_history
             ], 200);
         } catch (\Throwable $th) {

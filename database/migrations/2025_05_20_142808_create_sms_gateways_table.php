@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->json('credentials')->nullable();
+            $table->bigInteger('sms_charge');
             $table->enum('status', ['active', 'inactive']);
             $table->timestamps();
         });

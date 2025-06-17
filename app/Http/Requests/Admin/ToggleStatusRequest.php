@@ -1,12 +1,11 @@
 <?php
 
-namespace App\Http\Requests\User;
+namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Password;
 
-class RegisterRequest extends FormRequest
+class ToggleStatusRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,20 +23,10 @@ class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'userId' => 'required|unique:users',
-            'inviteCode' => [
+            'status' => [ // Add this rule
                 'required',
-                Rule::exists('invitation_codes', 'invite_code')->where(function ($query) {
-                    $query->where('status', 'active');
-                }), // Use Rule::exists
+                Rule::in(['active', 'inactive']),
             ],
-            'email' => 'nullable',
-            'name' => 'required',
-            'password' => [
-                'required',
-                'confirmed',
-                Password::defaults(),
-            ]
         ];
     }
 
@@ -49,7 +38,8 @@ class RegisterRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'inviteCode.exists' => 'The provided invitation code is invalid.',
+            'status.required' => 'The status field is required.', //Custom message
+            'status.in' => 'The status must be either "active" or "inactive".', //Custom message,
         ];
     }
 }
