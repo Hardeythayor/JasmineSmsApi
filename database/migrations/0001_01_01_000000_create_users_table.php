@@ -17,6 +17,7 @@ return new class extends Migration
             $table->enum('user_type', ['user', 'admin'])->default('user');
             $table->string('name');
             $table->string('email')->nullable()->unique();
+            $table->string('invite_code')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->enum('status', ['active', 'inactive'])->default('active');

@@ -14,6 +14,7 @@ Route::group(['middleware' => ['auth:user', AdminAccessOnly::class]], function (
         Route::get('profile/{id}', [ManageUserController::class, 'fetchUserProfile']);
         Route::patch('change_status/{id}', [ManageUserController::class, 'toggleUserStatus']);
         Route::post('sms_credit/{id}', [ManageUserController::class, 'addUserSmsCredit']);
+        Route::patch('reset_password/{id}', [ManageUserController::class, 'resetUserPassword']);
     });
     Route::prefix('sms_gateway')->group(function() {
         Route::get('/', [ManageSmsGatewayController::class, 'fetchSmsGateway']);
