@@ -20,7 +20,7 @@ class UserCreditHistory extends Model
             $credit = UserCredit::where('user_id', $credit_history->user_id)->lockForUpdate()->first();
 
 			if($credit_history->type == 'charge' ) {
-                $credit->credit_balance += abs($credit_history->amount);
+                $credit->credit_balance += $credit_history->amount;
             } else {
                 $credit->credit_balance -= abs($credit_history->amount);
             }
