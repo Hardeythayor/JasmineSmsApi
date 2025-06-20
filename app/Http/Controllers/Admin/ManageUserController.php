@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\ResetuserPasswordRequest;
 use App\Http\Requests\Admin\ToggleStatusRequest;
 use App\Models\SmsGateway;
 use App\Models\User;
 use App\Models\UserCreditHistory;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class ManageUserController extends Controller
 {
@@ -109,13 +111,36 @@ class ManageUserController extends Controller
             UserCreditHistory::create([
                 'user_id' => $id,
                 'type' => 'charge',
-                'amount' => abs($request->amount),
+                'amount' => $request->amount,
                 'purpose' => 'Admin Charge'
             ]);
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'User credit added successfully'
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function resetUserPassword(ResetuserPasswordRequest $request, $id)
+    {
+        try {
+            $user = User::where('id', $id)->first();
+            
+            if(!$user) {
+                throw new Exception('User not found!');
+            }
+
+            $user->password = Hash::make($request->password);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'User password updated successfully'
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
