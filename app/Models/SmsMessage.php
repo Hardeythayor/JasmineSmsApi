@@ -30,7 +30,7 @@ class SmsMessage extends Model
     public function getCreatedAtAttribute($value)
     {
         if($value) {
-            return Carbon::parse($value)->format('Y-m-d h:i');
+            return Carbon::parse($value)->setTimezone('Asia/Seoul')->format('Y-m-d h:i');
         }
         return null;
     }

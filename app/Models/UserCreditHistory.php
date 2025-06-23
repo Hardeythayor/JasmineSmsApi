@@ -2,15 +2,24 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class UserCreditHistory extends Model
 {
     protected $guarded = [];
 
-    protected $casts  = [
-        'created_at' => 'datetime:F j, Y H:i'
-    ];
+    // protected $casts  = [
+    //     'created_at' => 'datetime:F j, Y H:i'
+    // ];
+
+    public function getCreatedAtAttribute($value)
+    {
+        if($value) {
+            return Carbon::parse($value)->setTimezone('Asia/Seoul')->format('F j, Y H:i');
+        }
+        return null;
+    }
 
     public static function boot()
 	{
