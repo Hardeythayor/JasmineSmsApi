@@ -256,7 +256,7 @@ class SMSController extends Controller
         if(count($data) > 0) {
             $sms_message = SmsMessage::where('source' , $data['source'])->first();
 
-            if($sms_message) {
+            if($sms_message && $sms_message->message_type == 'normal') {
                 MessageRecipient::where(['message_id' => $sms_message->id, 'transformed_phone' => $data['msisdn']])->update([
                     'status' => ((isset($data['response']) && $data['response'] == 'DELIVRD') || (isset($data['status']) && $data['status'] == 'DELIVRD') ) ? 'completed' : (((isset($data['response']) && $data['response'] == 'UNDELIV') || (isset($data['status']) && $data['status'] == 'UNDELIV')) ? 'failed' : 'pending'),
                     'sent_at' => isset($data['sentdate']) ? $data['sentdate'] : $data['sent_date'],

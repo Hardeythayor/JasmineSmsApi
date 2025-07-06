@@ -13,7 +13,7 @@ class DashboardController extends Controller
     public function fetchUserSmsInfo()
     {
         $total_sms_sent = SmsMessage::where(['user_id' => request()->user()->id, 'message_type' => 'normal'])->count();
-        $remaining_credits = UserCredit::where('user_id', request()->user()->id)->first()->credit_balance;
+        $remaining_credits = UserCredit::where('user_id', request()->user()->id)->first()?->credit_balance;
 
         return response()->json([
             'status' => 'success',

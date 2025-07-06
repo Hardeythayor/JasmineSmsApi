@@ -16,17 +16,17 @@ class ThirdPartyNumbersSeeder extends Seeder
         $thirdparty_numbers = array(
 			array(
 				'label' => "skt",
-				'phone' => '821093226671',
+				'phone' => '821086418560',
 				'status' => 'active'
 			),
 			array(
 				'label' => "kt",
-				'phone' => '821025704340',
+				'phone' => '821068055831',
 				'status' => 'active'
 			),
             array(
 				'label' => "lgu",
-				'phone' => '821058363557',
+				'phone' => '821081324952',
 				'status' => 'active'
 			),
 		);
