@@ -47,7 +47,9 @@ class ManageUserController extends Controller
     public function fetchUserProfile($id)
     {
         try {
-            $user = User::withCount('messages')
+            $user = User::withCount(['messages' => function ($query) {
+                            $query->where('message_type', 'normal');
+                        }])
                         ->with('smsCredit:user_id,credit_balance')
                         ->where('id', $id)->first();
             
