@@ -74,7 +74,7 @@ class SMSController extends Controller
             DB::beginTransaction();
             $credit = UserCredit::where('user_id', $request->user()->id)->first();
             if(is_null($credit) || $credit->credit_balance < $request->smsAmount) {
-                throw new Exception('잔여 크레딧이 부족합니다. 고객센터로 문의 후 이용해주시길 바랍니다'); //('Insufficient credit balance');
+                throw new Exception("잔여 크레딧이 부족합니다 \n 고객센터로 문의 후 이용해주시길 바랍니다"); //('Insufficient credit balance');
             }
 
             //save message
