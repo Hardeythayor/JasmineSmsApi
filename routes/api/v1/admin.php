@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\InviteCodeController;
 use App\Http\Controllers\Admin\ManageSmsGatewayController;
 use App\Http\Controllers\Admin\ManageUserController;
+use App\Http\Controllers\Admin\SpamFilterController;
 use App\Http\Controllers\Admin\ThirdPartyController;
 use App\Http\Middleware\AdminAccessOnly;
 use Illuminate\Support\Facades\Route;
@@ -34,5 +35,12 @@ Route::group(['middleware' => ['auth:user', AdminAccessOnly::class]], function (
     Route::prefix('dashboard')->group(function() {
         Route::get('/analytics', [DashboardController::class, 'fetchAnalytics']);
         Route::get('/chart_data', [DashboardController::class, 'fetchSmsChartData']);
+    });
+
+    Route::prefix('spam_filter')->group(function() {
+        Route::post('/', [SpamFilterController::class, 'fetchSpamWords']);
+        Route::post('/add', [SpamFilterController::class, 'addSpamWord']);
+        Route::patch('activate/{id}', [SpamFilterController::class, 'activateSpamWord']);
+        Route::put('edit/{id}', [SpamFilterController::class, 'updateSpamWord']);
     });
 });

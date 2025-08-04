@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\SpamFilterController;
 use App\Http\Controllers\User\Auth\LoginController;
 use App\Http\Controllers\User\Auth\RegisterController;
 use App\Http\Controllers\User\DashboardController;
@@ -16,6 +17,8 @@ Route::prefix('auth')->group(function () {
     Route::post('/register', [RegisterController::class, 'register']);
     Route::post('/login', [LoginController::class, 'login']);
 });
+
+Route::post('/spam_filter', [SpamFilterController::class, 'fetchSpamWords']);
 
 Route::group(['middleware' => ['auth:user']], function () {
     Route::post('/auth/logout', [LoginController::class, 'logout']);
