@@ -305,7 +305,7 @@ class SMSController extends Controller
         $recipient = ThirdPartyNumber::where('label', $type)->first()?->phone;
 
         // $sms_message = SmsMessage::where('source' , $formatted_number)->first();
-        $sms_message = SmsMessage::where('content', 'LIKE', "%{$body}%")->first();
+        $sms_message = SmsMessage::where('content', 'LIKE', "%{$body}%")->latest()->first();
         
         if($sms_message) {
             MessageRecipient::where(['message_id' => $sms_message->id, 'transformed_phone' => $recipient])->update([
