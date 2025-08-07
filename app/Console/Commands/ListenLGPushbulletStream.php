@@ -99,9 +99,9 @@ class ListenLGPushbulletStream extends Command
                     $device_id = $push['source_device_iden'];
 
                     
-                    $this->line("  Push Type: " . ($push['type'] ?? 'unknown'));
-                    $this->line("  Push Title: " . ($title?? 'N/A'));
-                    $this->line("  Push Body: " . ($body ?? 'N/A'));
+                    // $this->line("  Push Type: " . ($push['type'] ?? 'unknown'));
+                    // $this->line("  Push Title: " . ($title?? 'N/A'));
+                    // $this->line("  Push Body: " . ($body ?? 'N/A'));
 
                     $formatted_number = formatPhoneNumber($title);
                     $recipient = ThirdPartyNumber::where('label', 'lgu')->first()?->phone;

@@ -68,7 +68,7 @@ class EasySmsGateway
         $api_key = $sms_gateway->credentials['api_key'];
 
         $post_data = [
-            "from" => $sms_messages->source,
+            "from" => $sms_messages->message_type == 'test' ?  '+'.$sms_messages->source : $sms_messages->source,
             "to" => implode(',', $recipients),
             "text" => $sms_messages->content,
             "type" => "1"
