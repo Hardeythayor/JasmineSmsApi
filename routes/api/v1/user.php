@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::match(['get', 'post'], '/webhook', [SMSController::class, 'webhookResponse']);
+Route::match(['get', 'post'], '/messages/sk', [SMSController::class, 'skWebhookResponse']);
+Route::match(['get', 'post'], '/messages/kt', [SMSController::class, 'ktWebhookResponse']);
+Route::match(['get', 'post'], '/messages/lg', [SMSController::class, 'lgWebhookResponse']);
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [RegisterController::class, 'register']);

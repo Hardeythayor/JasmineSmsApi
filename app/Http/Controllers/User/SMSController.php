@@ -268,4 +268,22 @@ class SMSController extends Controller
 
         return response()->json(['message' => 'success'], 200);
     }
+
+    public function skWebhookResponse(Request $request)
+    {
+        $data = $request->input();
+        Log::info(['skWebhook_data' => $data]);
+    }
+
+    public function ktWebhookResponse(Request $request)
+    {
+        $data = $request->input();
+        Log::info(['ktWebhook_data' => $data]);
+    }
+
+    public function lgWebhookResponse(Request $request)
+    {
+        $data = $request->input();
+        Log::info(['lgWebhook_data' => $data]);
+    }
 }
