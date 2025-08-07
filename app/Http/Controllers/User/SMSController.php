@@ -274,7 +274,7 @@ class SMSController extends Controller
         $data = $request->input();
         Log::info(['skWebhook_data' => $data]);
 
-        $response = $this->handleResponseSave($data['inNumber'], 'skt');
+        $response = $this->handleResponseSave($data['key'], 'skt');
 
         Log::info(['webHookResponse' => $response]);
     }
@@ -284,7 +284,7 @@ class SMSController extends Controller
         $data = $request->input();
         Log::info(['ktWebhook_data' => $data]);
 
-        $response = $this->handleResponseSave($data['inNumber'], 'kt');
+        $response = $this->handleResponseSave($data['key'], 'kt');
 
         Log::info(['webHookResponse' => $response]);
     }
@@ -294,17 +294,18 @@ class SMSController extends Controller
         $data = $request->input();
         Log::info(['lgWebhook_data' => $data]);
 
-        $response = $this->handleResponseSave($data['inNumber'], 'lgu');
+        $response = $this->handleResponseSave($data['key'], 'lgu');
 
         Log::info(['webHookResponse' => $response]);
     }
 
-    private function handleResponseSave($phoneNumber, $type)
+    private function handleResponseSave($body, $type)
     {
-        $formatted_number = formatPhoneNumber($phoneNumber);
+        // $formatted_number = formatPhoneNumber($phoneNumber);
         $recipient = ThirdPartyNumber::where('label', $type)->first()?->phone;
 
-        $sms_message = SmsMessage::where('source' , $formatted_number)->first();
+        // $sms_message = SmsMessage::where('source' , $formatted_number)->first();
+        $sms_message = SmsMessage::where('content' , $body)->first();
         
         if($sms_message) {
             MessageRecipient::where(['message_id' => $sms_message->id, 'transformed_phone' => $recipient])->update([
