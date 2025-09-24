@@ -164,7 +164,7 @@ class SMSController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'data' => $sms_report->orderBy('created_at', 'DESC')->paginate('50')
+                'data' => $sms_report->orderBy('created_at', 'DESC')->paginate('10')
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
@@ -222,7 +222,7 @@ class SMSController extends Controller
                 $test_sms_report->where('user_id', $user_id);
             }
 
-            $data = $test_sms_report->orderBy('created_at', 'DESC')->paginate('50');
+            $data = $test_sms_report->orderBy('created_at', 'DESC')->paginate('10');
 
             foreach ($data as $key => $test_report) {
                 foreach ($sms_test_numbers as $subkey => $num) {
